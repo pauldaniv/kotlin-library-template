@@ -1,4 +1,3 @@
-group = "com.pauldaniv.java.library.template"
 version = "1.0-SNAPSHOT"
 
 dependencies {
