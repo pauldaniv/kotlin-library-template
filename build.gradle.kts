@@ -1,10 +1,9 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
-  base
-  java
   idea
+  groovy
   `maven-publish`
-  id("io.freefair.lombok") version "5.1.1"
-  id("com.jfrog.bintray") version "1.8.4" apply false
   kotlin("jvm") version "1.3.50" apply false
 }
 
@@ -12,9 +11,38 @@ val githubUsr: String = findParam("gpr.usr", "USERNAME") ?: ""
 val githubKey: String? = findParam("gpr.key", "TOKEN", "GITHUB_TOKEN")
 
 subprojects {
-  group = "com.pauldaniv.library.template"
-  apply(plugin = "java")
+  group = "com.pauldaniv.kotlin.library.template"
+
+  apply(plugin = "idea")
+  apply(plugin = "kotlin")
+  apply(plugin = "groovy")
   apply(plugin = "maven-publish")
+  apply(plugin = "org.jetbrains.kotlin.jvm")
+
+  repositories {
+    jcenter()
+    mavenCentral()
+    mavenLocal()
+    maven {
+      name = "GitHub-Bom-Repository"
+      url = uri("https://maven.pkg.github.com/pauldaniv/bom-template")
+      credentials {
+        username = githubUsr
+        password = githubKey
+      }
+    }
+  }
+
+  dependencies {
+    implementation(platform("com.paul:bom-template:0.0.+"))
+    implementation("com.asprise.ocr:java-ocr-api:15.3.0.3")
+    implementation("com.google.guava:guava:29.0-jre")
+    implementation("org.codehaus.groovy:groovy:2.5.6")
+
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
+  }
+
   val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier.set("sources")
     from(sourceSets["main"].allSource)
@@ -39,37 +67,6 @@ subprojects {
       }
     }
   }
-}
-
-allprojects {
-  apply(plugin = "java")
-  apply(plugin = "idea")
-  apply(plugin = "groovy")
-  apply(plugin = "io.freefair.lombok")
-
-  repositories {
-    jcenter()
-    mavenCentral()
-    maven {
-      name = "GitHub-Maven-Repo"
-      url = uri("https://maven.pkg.github.com/pauldaniv/bom-template")
-      credentials {
-        username = githubUsr
-        password = githubKey
-      }
-    }
-  }
-
-  dependencies {
-    implementation(platform("com.paul:bom-template:0.0.+"))
-    implementation("org.codehaus.groovy:groovy")
-    testImplementation("org.assertj:assertj-core")
-    testImplementation("org.junit.jupiter:junit-jupiter")
-  }
-
-  configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-  }
 
   idea {
     module {
@@ -82,11 +79,20 @@ allprojects {
       ))
     }
   }
-
-  tasks.withType<Test> {
-    useJUnitPlatform()
+  tasks.withType<JavaCompile> {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
   }
 
+  tasks.withType<KotlinCompile> {
+    kotlinOptions {
+      freeCompilerArgs = listOf("-Xjsr305=strict")
+      jvmTarget = "1.8"
+    }
+  }
+  configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+  }
   configurations.all {
     resolutionStrategy.cacheDynamicVersionsFor(1, "minutes")
   }
