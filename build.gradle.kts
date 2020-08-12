@@ -37,6 +37,7 @@ subprojects {
     implementation(platform("com.paul:bom-template:0.0.+"))
     implementation("com.asprise.ocr:java-ocr-api:15.3.0.3")
     implementation("com.google.guava:guava:29.0-jre")
+    testImplementation("org.assertj:assertj-core")
     implementation("org.codehaus.groovy:groovy:2.5.6")
 
     implementation(kotlin("stdlib-jdk8"))
@@ -92,6 +93,9 @@ subprojects {
   }
   configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
+  }
+  tasks.withType<Test> {
+    useJUnitPlatform()
   }
   configurations.all {
     resolutionStrategy.cacheDynamicVersionsFor(1, "minutes")
