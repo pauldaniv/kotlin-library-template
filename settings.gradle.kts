@@ -1,3 +1,3 @@
-rootProject.name = "java-library-template"
+rootProject.name = "kotlin-library-template"
 
 include("first", "second")
