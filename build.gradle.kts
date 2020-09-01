@@ -7,8 +7,11 @@ plugins {
   kotlin("jvm") version "1.3.50" apply false
 }
 
+val packagesUrl = "https://maven.pkg.github.com/pauldaniv"
+
 val githubUsr: String = findParam("gpr.usr", "USERNAME") ?: ""
-val githubKey: String? = findParam("gpr.key", "TOKEN", "GITHUB_TOKEN")
+val publishKey: String? = findParam("gpr.key", "GITHUB_TOKEN")
+val packageKey = findParam("TOKEN", "PACKAGES_ACCESS_TOKEN") ?: publishKey
 
 subprojects {
   group = "com.pauldaniv.kotlin.library.template"
@@ -23,13 +26,10 @@ subprojects {
     jcenter()
     mavenCentral()
     mavenLocal()
-    maven {
-      name = "GitHub-Bom-Repository"
-      url = uri("https://maven.pkg.github.com/pauldaniv/bom-template")
-      credentials {
-        username = githubUsr
-        password = githubKey
-      }
+    repoForName(
+        "bom-template",
+    ) {
+      maven(it)
     }
   }
 
@@ -53,10 +53,10 @@ subprojects {
     repositories {
       maven {
         name = "GitHub-Publish-Repo"
-        url = uri("https://maven.pkg.github.com/pauldaniv/${rootProject.name}")
+        url = uri("$packagesUrl/${rootProject.name}")
         credentials {
           username = githubUsr
-          password = githubKey
+          password = publishKey
         }
       }
     }
@@ -100,6 +100,18 @@ subprojects {
   configurations.all {
     resolutionStrategy.cacheDynamicVersionsFor(1, "minutes")
   }
+}
+
+fun repoForName(vararg repos: String, repoRegistrar: (MavenArtifactRepository.() -> Unit) -> Unit) = repos.forEach {
+  val maven: MavenArtifactRepository.() -> Unit = {
+    name = "GitHubPackages"
+    url = uri("$packagesUrl/$it")
+    credentials {
+      username = githubUsr
+      password = packageKey
+    }
+  }
+  repoRegistrar(maven)
 }
 
 fun findParam(vararg names: String): String? {
