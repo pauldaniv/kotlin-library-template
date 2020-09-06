@@ -1,4 +1,4 @@
-version = "1.0-SNAPSHOT"
+version = "0.0.1-SNAPSHOT"
 
 dependencies {
   testImplementation("org.slf4j:slf4j-api")
