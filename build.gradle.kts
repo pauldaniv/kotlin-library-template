@@ -27,7 +27,7 @@ subprojects {
     mavenCentral()
     mavenLocal()
     repoForName(
-        "bom-template",
+        "bom-template"
     ) {
       maven(it)
     }
